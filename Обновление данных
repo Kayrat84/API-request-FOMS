@@ -1,0 +1,15 @@
+import pyodbc 
+def zapros(pat,nom,sk):
+    zap = " -/-/-/-/-/-/"
+    return zap
+connection_to_db = pyodbc.connect(r'driver={SQL server};Server= ;Database= ;Trusted_Connection=yes;')
+cursor=connection_to_db.cursor()
+for a in row1:
+    if len(a) == 5:
+        if a[4] != '':
+            try:
+                cursor.execute(zapros(a[0],a[2],a[4]))
+                connection_to_db.commit()
+            except:
+                print(a)
+connection_to_db.close()
