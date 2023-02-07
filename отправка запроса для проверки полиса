@@ -1,0 +1,97 @@
+import mechanize
+import requests
+from bs4 import BeautifulSoup as bs
+from requests import Response
+dct = {
+    'СОГАЗ'     :'1000027835',
+    'МЕДСТРАХ'  :'1000027833',
+    'МАКС-М'    :'1000027832',
+    'КАПИТАЛ'   :'1000027837',
+    'ИНГОССТРАХ':'1000027836',
+    'РЕСО'      :'1000027834'
+}
+br = mechanize.Browser()
+br.set_handle_robots(False)
+br.open("https://www.mgfoms.ru/chastnye-lica/proverka-polisa")
+def new(nom):
+    br.open("https://www.mgfoms.ru/chastnye-lica/proverka-polisa")
+    br.select_form(nr=2)
+    br['number_new'] = nom
+    br.submit()
+    url = br.geturl()
+    page = requests.post(url)
+    soup = bs(page.text)
+    sk = soup.find_all(class_='field-content')
+    res=''
+    if sk != []:
+        for i in dct.keys():
+            if i in str(sk[0]):
+                res=dct[i]
+    return res
+
+def old(nom,ser):
+    br.open("https://www.mgfoms.ru/chastnye-lica/proverka-polisa")
+    br.select_form(nr=1)
+    br['number_old'] = nom
+    br['range'] = ser
+    br.submit()
+    url = br.geturl()
+    page = requests.post(url)
+    soup = bs(page.text)
+    sk = soup.find_all(class_='field-content')
+    res=''
+    if sk != []:
+        for i in dct.keys():
+            if i in str(sk[0]):
+                res=dct[i]
+    return res
+
+def mo(ne, no):
+    dc = {
+        'СОГАЗ-МЕД': '1000027757',
+        'МЕДСТРАХ': '1000027756',
+        'МАКС-М': '1000027755',
+        'КАПИТАЛ': '1000027758',
+        'РЕСО-МЕД': '1000027754'
+    }
+
+    br.open("http://www.mofoms.ru/polis/")
+    br.select_form(nr=0)
+    br['npolice'] = no  # i[2]
+    br['bth_date'] = ne  # i[3]
+    response = br.submit()
+    content = response.read()
+    soup = bs(content, "html.parser")
+    allNews = soup.find_all('div', class_=None)
+    st = allNews[4].text
+    res = ''
+    if 'Состоит на учёте' in st:
+        for j in dc.keys():
+            if j in st:
+                res = dc[j]
+    return res
+
+for a in row1:
+    if len(a) == 4:
+        if len(a[2]) == 16:
+            if a[2].startswith('770'):
+                a.append(old(a[2][6:],a[2][:6]))
+                if a[4] == '':
+                    a[4] = mo(a[3],a[2])
+            else:
+                a.append(new(a[2]))
+                if a[4] == '':
+                    a[4] = mo(a[3],a[2])
+        elif len(a[2]) == 10 and type(a[1]) == str:
+            if len(a[1]) == 6:
+                a.append(old(a[2],a[1]))
+            else:
+                print(row1.index(a))
+                mas.append(a[0])
+                row1.remove(a)
+              
+        else:
+            print(row1.index(a))
+            mas.append(a[0])
+            row1.remove(a)
+          
