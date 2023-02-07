@@ -1,0 +1,105 @@
+import mechanize
+import requests
+from bs4 import BeautifulSoup as bs
+from tkinter import messagebox
+import sys
+
+dr = '31.03.1988'
+nom = '5056110868002048'
+ser = ''
+#if len(sys.argv) == 3:
+#    dr = sys.argv[1]
+#    nom = sys.argv[2]
+#elif len(sys.argv) == 4:
+#    dr = sys.argv[1]
+ #   nom = sys.argv[2]
+  #  ser = sys.argv[3]
+dct = {
+    'СОГАЗ-МЕД': '1000027835',
+    'МЕДСТРАХ': '1000027833',
+    'МАКС-М': '1000027832',
+    'КАПИТАЛ': '1000027837',
+    'ИНГОССТРАХ': '1000027836',
+    'РЕСО-МЕД': '1000027834'
+}
+br = mechanize.Browser()
+br.set_handle_robots(False)
+br.open("https://www.mgfoms.ru/chastnye-lica/proverka-polisa")
+
+
+def new(no):
+    br.select_form(nr=2)
+    br['number_new'] = no
+    br.submit()
+    url = br.geturl()
+    page = requests.post(url)
+    soup = bs(page.text)
+    sk = soup.find_all(class_='field-content')
+    res = ''
+    if sk != []:
+        for i in dct.keys():
+            if i in str(sk[0]):
+                res = i
+    return res
+
+
+def old(no, se):
+    br.select_form(nr=1)
+    br['number_old'] = no
+    br['range'] = se
+    br.submit()
+    url = br.geturl()
+    page = requests.post(url)
+    soup = bs(page.text)
+    sk = soup.find_all(class_='field-content')
+    res = ''
+    if sk != []:
+        for i in dct.keys():
+            if i in str(sk[0]):
+                res = i
+    return res
+
+
+def mo(ne, no):
+    dct = {
+        'СОГАЗ-МЕД': '1000027757',
+        'МЕДСТРАХ': '1000027756',
+        'МАКС-М': '1000027755',
+        'КАПИТАЛ': '1000027758',
+        'РЕСО-МЕД': '1000027754'
+    }
+
+    br.open("http://www.mofoms.ru/polis/")
+    br.select_form(nr=0)
+    br['npolice'] = no  # i[2]
+    br['bth_date'] = ne  # i[3]
+    response = br.submit()
+    content = response.read()
+    soup = bs(content, "html.parser")
+    allNews = soup.find_all('div', class_=None)
+    st = allNews[4].text
+    if 'Состоит на учёте' in st:
+        for j in dct.keys():
+            if j in st:
+                return j
+    return ''
+
+smo = ''
+# Проверка по Москве
+if len(nom) == 16:
+    if nom.startswith('770'):
+        smo = old(nom[6:], nom[:6])
+    else:
+        smo = new(nom)
+elif len(nom) == 10 and type(ser) == str:
+    if len(ser) == 6:
+        smo = (old(nom, ser))
+if smo != '':
+    messagebox.showinfo('Ответ', 'Полис зарегистрирован в страховой компании  - ' + smo + ' (Москва)')
+else:
+    smo = mo(dr, nom)
+    if smo != '':
+        messagebox.showinfo('Ответ', 'Полис зарегистрирован в страховой компании  - ' + str(smo) + ' (МО)')
+    else:
+        messagebox.showinfo('Ответ', 'Полис не зарегистрирован в Москве и МО')
+
