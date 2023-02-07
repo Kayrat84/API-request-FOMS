@@ -1,0 +1,14 @@
+import pandas as pd
+import pyodbc 
+import datetime
+connection_to_db = pyodbc.connect(r'driver={SQL server};Server= -/-/-/-    ;Database=-/-/-/-/-/ ;Trusted_Connection=yes;')
+cursor=connection_to_db.cursor()
+cursor.execute("")
+# SELECT 
+row1 = [list(i) for i in row if i[2] is not None]
+for i in row1:
+    try:
+        i[3] = i[3].strftime("%d.%m.%Y")
+    except:
+        row1.remove(i)
+connection_to_db.close()
